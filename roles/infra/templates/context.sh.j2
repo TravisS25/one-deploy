@@ -16,7 +16,7 @@ ETH{{ idx }}_DNS='{{ ctx.dns }}'
 ETH{{ idx }}_GATEWAY='{{ ctx.gateway }}'
 {% endif %}
 ETH{{ idx }}_IP='{{ ctx.ip }}'
-ETH{{ idx }}_MAC='{{ ctx.mac | d("02:01:%02x:%02x:%02x:%02x" | format(*(ctx.ip.split(".") | map("int")))) }}'
+ETH{{ idx }}_MAC='{{ ctx.mac | d(context_mac_format | format(*(ctx.ip.split(".") | map("int")))) }}'
 ETH{{ idx }}_MASK='{{ ctx.mask }}'
 ETH{{ idx }}_NETWORK='{{ ctx.network }}'
 

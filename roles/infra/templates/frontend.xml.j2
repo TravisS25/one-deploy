@@ -106,7 +106,7 @@
     {% for ctx in context_networks %}
     {% set idx = loop.index %}
     <interface type='bridge'>
-      <mac address='{{ ctx.mac | d("02:01:%02x:%02x:%02x:%02x" | format(*(ctx.ip.split(".") | map("int")))) }}'/>
+      <mac address='{{ ctx.mac | d(context_mac_format | format(*(ctx.ip.split(".") | map("int")))) }}'/>
       <source bridge='{{ ctx.bridge | d(infra_bridge) }}'/>
       <target dev='{{ ctx.target_dev | d(frontend_vm_name) }}-{{ idx }}'/>
       <model type='{{ ctx.model_type | d('virtio') }}'/>

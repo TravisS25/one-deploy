@@ -1,10 +1,16 @@
-<domain type='kvm'>
+<domain type='{{ domain_type | d("kvm") }}'>
   <name>{{ frontend_vm_name | d(frontend) }}</name>
   <title>{{ frontend_vm_name | d(frontend) }}</title>
 
   <memory unit='KiB'>{{ memory_KiB }}</memory>
   <vcpu placement='static'>{{ vcpu_static }}</vcpu>
+{% if (domain_type | d('kvm')) == 'kvm' %}
   <cpu mode='host-passthrough' check='none' migratable='on'/>
+{% else %}
+  <cpu mode='custom' match='exact' check='none'>
+    <model fallback='allow'>Nehalem</model>
+  </cpu>
+{% endif %}
 
   <resource>
     <partition>/machine</partition>
@@ -131,5 +137,12 @@
       <model type='cirrus' vram='16384' heads='1' primary='yes'/>
       <alias name='video0'/>
     </video>
+
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
   </devices>
 </domain>

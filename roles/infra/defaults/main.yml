@@ -10,6 +10,7 @@ passthrough_fs: []
 disk_bus_type: scsi
 frontend_vm_name: onecloud-01
 firmware_type: bios
+domain_type: kvm
 secure_boot: false
 uefi_loader: /usr/share/OVMF/OVMF_CODE.fd
 uefi_loader_secure: /usr/share/OVMF/OVMF_CODE.secboot.fd

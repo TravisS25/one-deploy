@@ -32,7 +32,7 @@
         vars:
           frontend: "{{ tempfile.results[item].frontend }}"
           context: "{{ hostvars[tempfile.results[item].frontend].context }}"
-        loop: "{{ range(tempfile.results | count) }}"
+        loop: "{{ range(tempfile.results | count) | list }}"
         register: template_context_sh
 
       - name: Create context ISO images
@@ -43,7 +43,7 @@
         changed_when: true
         vars:
           frontend: "{{ tempfile.results[item].frontend }}"
-        loop: "{{ range(tempfile.results | count) }}"
+        loop: "{{ range(tempfile.results | count) | list }}"
         when: template_context_sh is changed
 
       always:
@@ -85,7 +85,7 @@
           {{ dict(_frontends | zip(_ports)) }}
       vars:
         _ports: >-
-          {{ range(vnc_max_port, vnc_max_port - (_frontends | count), -1) }}
+          {{ range(vnc_max_port, vnc_max_port - (_frontends | count), -1) | list }}
         _frontends: >-
           {{ groups[_frontend_group] }}
         _frontend_group: >-

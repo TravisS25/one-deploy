@@ -77,9 +77,6 @@
           onevnet_ids: []
           oneimage_disk_ids: []
           vm_total_disk_bytes: 0
-          all_vm_disk_sizes: 
-            virtual: 0 
-            actual: 0
           onetemplate_vm_path: "{{ vm_template_dir }}/{{ import_vm.key }}.txt"
           disk_log_dir: "{{ one_tmp_dir }}/logs/{{ import_vm.key }}"
           xml_dump_file: "{{ vm_disk_location_shell.stdout_lines[0] | dirname }}/{{ import_vm.key }}.xml.bak"
@@ -236,56 +233,6 @@
 
       - delegate_to: "{{ leader }}"
         block:
-          - name: "Find all files under {{ ds_configs.image.path }}"
-            ansible.builtin.find:
-              paths: "{{ ds_configs.image.path }}"
-              recurse: yes
-              file_type: file
-            register: all_files
-            tags:
-              - import
-
-          - name: Try qemu-img info on each file
-            ansible.builtin.command: |
-              qemu-img info --force-share --output=json {{ item.path }}
-            loop: "{{ all_files.files }}"
-            register: disk_info
-            changed_when: false
-            failed_when: false 
-            tags:
-              - import
-
-          - name: Extract disk sizes from valid images
-            ansible.builtin.set_fact:
-              all_vm_disk_sizes: |
-                {{
-                  all_vm_disk_sizes
-                  | combine({
-                      'virtual': (all_vm_disk_sizes.virtual | default(0)) + (item.stdout | from_json)['virtual-size'],
-                      'actual':  (all_vm_disk_sizes.actual  | default(0)) + (item.stdout | from_json)['actual-size']
-                    })
-                }}
-            loop: "{{ disk_info.results }}"
-            when: item.rc == 0 
-            tags:
-              - import
-
-          - name: Calculate size difference
-            ansible.builtin.set_fact:
-              disk_size_diff: "{{ all_vm_disk_sizes.virtual - all_vm_disk_sizes.actual }}"
-            tags:
-              - import
-
-          - name: Debug disk size difference
-            ansible.builtin.debug:
-              msg:
-                - "All vm disks virtual space: {{ all_vm_disk_sizes.virtual }}"
-                - "All vm disks actual space: {{ all_vm_disk_sizes.actual }}"
-                - "Calculated disk size difference: {{ disk_size_diff }}"
-            tags:
-              - never
-              - debug
-  
           - name: Get available space on filesystem
             ansible.builtin.shell: df --output=avail -B1 {{ ds_configs.image.path }} | tail -1
             register: df_img_available_space
@@ -301,7 +248,7 @@
 
           - name: Calculate remaining space after virtual usage
             ansible.builtin.set_fact:
-              disk_dir_remaining_bytes: "{{ (available_space | int) - (disk_size_diff | int) }}"
+              disk_dir_remaining_bytes: "{{ available_space | int }}"
             tags:
               - import
 
